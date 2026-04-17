@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImageFuse – Multi-Image to A4 Converter</title>
+  <meta name="description" content="Drag and drop multiple images and combine them into a single A4-sized page. Free, fast, and works entirely in your browser." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="8" height="8" rx="1.5" fill="currentColor" opacity="0.9"/>
+            <rect x="13" y="3" width="8" height="8" rx="1.5" fill="currentColor" opacity="0.6"/>
+            <rect x="3" y="13" width="8" height="8" rx="1.5" fill="currentColor" opacity="0.6"/>
+            <rect x="13" y="13" width="8" height="8" rx="1.5" fill="currentColor" opacity="0.3"/>
+          </svg>
+        </div>
+        <span class="logo-text">ImageFuse</span>
+      </div>
+      <div class="header-badge">A4 Converter</div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1 class="hero-title">Combine Images into<br /><span class="gradient-text">One A4 Page</span></h1>
+      <p class="hero-subtitle">Drag & drop your images, reorder them with ease, and export as a perfectly formatted A4 PDF or image — all in your browser.</p>
+    </section>
+
+    <!-- Drop Zone -->
+    <div class="dropzone-container">
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-inner">
+          <div class="dropzone-icon">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M32 8L32 44M32 8L20 20M32 8L44 20" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 48V52C8 54.2 9.8 56 12 56H52C54.2 56 56 54.2 56 52V48" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="dropzone-title">Drop images here</p>
+          <p class="dropzone-sub">or <label for="file-input" class="file-label">browse files</label></p>
+          <p class="dropzone-formats">PNG · JPG · WEBP · GIF · BMP</p>
+        </div>
+        <input type="file" id="file-input" accept="image/*" multiple hidden />
+      </div>
+    </div>
+
+    <!-- Controls Panel (hidden until images are added) -->
+    <div class="controls-panel" id="controls-panel" style="display:none;">
+      <div class="controls-left">
+        <div class="control-group">
+          <label class="control-label">Layout</label>
+          <div class="segmented" id="layout-segmented">
+            <button class="seg-btn active" data-value="grid" id="btn-grid">Grid</button>
+            <button class="seg-btn" data-value="stack" id="btn-stack">Stack</button>
+            <button class="seg-btn" data-value="single" id="btn-single">Single</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Columns</label>
+          <div class="segmented" id="cols-segmented">
+            <button class="seg-btn active" data-value="1" id="btn-col1">1</button>
+            <button class="seg-btn" data-value="2" id="btn-col2">2</button>
+            <button class="seg-btn" data-value="3" id="btn-col3">3</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Fit Mode</label>
+          <div class="segmented">
+            <button class="seg-btn active" data-value="contain" id="btn-contain">Contain</button>
+            <button class="seg-btn" data-value="cover" id="btn-cover">Cover</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Gap</label>
+          <input type="range" id="gap-slider" min="0" max="30" value="8" class="slider" />
+          <span class="slider-value" id="gap-value">8px</span>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Margin</label>
+          <input type="range" id="margin-slider" min="0" max="50" value="20" class="slider" />
+          <span class="slider-value" id="margin-value">20px</span>
+        </div>
+      </div>
+
+      <div class="controls-right">
+        <button class="btn btn-secondary" id="btn-clear">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M4 4L16 16M4 16L16 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Clear All
+        </button>
+        <button class="btn btn-primary" id="btn-export-pdf">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M10 3v10M10 13l-3-3M10 13l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Export PDF
+        </button>
+        <button class="btn btn-accent" id="btn-export-img">
+          <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="2"/><circle cx="7" cy="9" r="1.5" fill="currentColor"/><path d="M2 14l4-4 3 3 3-4 4 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Export Image
+        </button>
+      </div>
+    </div>
+
+    <!-- Image Grid / Sortable Area -->
+    <div class="images-section" id="images-section" style="display:none;">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span id="image-count">0</span> Images Added
+          <span class="section-hint">Drag to reorder</span>
+        </h2>
+      </div>
+      <div class="image-grid" id="image-grid"></div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="preview-section" id="preview-section" style="display:none;">
+      <div class="section-header">
+        <h2 class="section-title">A4 Preview</h2>
+        <div class="preview-badge">210 × 297 mm</div>
+      </div>
+      <div class="preview-wrapper">
+        <div class="preview-shadow">
+          <canvas id="preview-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
